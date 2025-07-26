@@ -4,7 +4,7 @@ import os
 from datetime import datetime, date, time
 from dateutil.parser import parse as parse_datetime
 
-CORRECT_PASSWORD = "veda12"
+CORRECT_PASSWORD = "YourStrongPassword123"
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -16,13 +16,13 @@ if "just_logged_out" not in st.session_state:
 if st.session_state.get("logged_in"):
     top = st.columns([0.85, 0.15])
     with top[1]:
-        if st.button("\ud83d\udeaa Logout"):
+        if st.button("🚪 Logout"):
             st.session_state.logged_in = False
             st.session_state.just_logged_out = True
             st.stop()
 
 if not st.session_state.get("logged_in"):
-    st.title("\ud83d\udd10 Login Required")
+    st.title("🔐 Login Required")
     password = st.text_input("Enter password", type="password")
     if st.button("Login"):
         if password == CORRECT_PASSWORD:
@@ -35,14 +35,14 @@ if not st.session_state.get("logged_in"):
 
 if st.session_state.just_logged_in:
     st.session_state.just_logged_in = False
-    st.success("\u2705 Logged in!")
+    st.success("✅ Logged in!")
 
 if st.session_state.just_logged_out:
     st.session_state.just_logged_out = False
-    st.info("\ud83d\udeaa Logged out successfully.")
+    st.info("🚪 Logged out successfully.")
 
 TASKS_FILE = "tasks.json"
-CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Personal", "Other"]
+CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Jagdish Express", "Personal", "Other"]
 
 def load_tasks():
     if os.path.exists(TASKS_FILE):
@@ -108,20 +108,20 @@ def format_deadline(deadline_str):
         now = datetime.now()
         delta = (deadline - now).total_seconds()
         if deadline.date() < now.date():
-            return f"\ud83d\udd34 Overdue: {deadline.strftime('%b %d, %I:%M %p')}"
+            return f"🔴 Overdue: {deadline.strftime('%b %d, %I:%M %p')}"
         elif 0 <= delta <= 86400:
-            return f"\ud83d\udd38 Due Soon: {deadline.strftime('%b %d, %I:%M %p')}"
+            return f"🔸 Due Soon: {deadline.strftime('%b %d, %I:%M %p')}"
         elif deadline.date() == now.date():
-            return f"\ud83d\udfe1 Due Today: {deadline.strftime('%I:%M %p')}"
+            return f"🟡 Due Today: {deadline.strftime('%I:%M %p')}"
         else:
-            return f"\ud83d\uddd3\ufe0f {deadline.strftime('%b %d, %I:%M %p')}"
+            return f"🗓️ {deadline.strftime('%b %d, %I:%M %p')}"
     except Exception:
-        return "\ud83d\uddd3\ufe0f Invalid deadline"
+        return "🗓️ Invalid deadline"
 
-st.set_page_config("\ud83d\udcdd Tasklist with Reordering", layout="centered")
-st.title("\ud83d\uddc2\ufe0f Multi-Business Task Manager")
+st.set_page_config("📝 Tasklist with Reordering", layout="centered")
+st.title("🗂️ Multi-Business Task Manager")
 
-with st.expander("\u2795 Add a New Task", expanded=True):
+with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
         title = st.text_input("Task Title")
         description = st.text_area("Description (optional)")
@@ -142,10 +142,9 @@ with st.expander("\u2795 Add a New Task", expanded=True):
             st.stop()
 
 if st.session_state.get("just_added"):
-    st.success("\u2705 Task added!")
+    st.success("✅ Task added!")
     del st.session_state["just_added"]
 
-# Load and sort tasks
 all_tasks = load_tasks()
 tasks_by_category = {}
 for i, task in enumerate(all_tasks):
@@ -154,7 +153,7 @@ for i, task in enumerate(all_tasks):
 
 for category, cat_tasks in tasks_by_category.items():
     sorted_tasks = sorted(cat_tasks, key=lambda x: x[1].get("order", 0))
-    with st.expander(f"\ud83d\udcc1 {category}", expanded=False):
+    with st.expander(f"📁 {category}", expanded=False):
         for i, (task_index, task) in enumerate(sorted_tasks):
             with st.container():
                 row = st.columns([0.07, 0.6, 0.23, 0.1])
@@ -170,7 +169,7 @@ for category, cat_tasks in tasks_by_category.items():
                 if order_num != task.get("order", i):
                     update_task(task_index, "order", order_num)
 
-                if row[3].button("\u274c", key=f"del-{task_index}"):
+                if row[3].button("❌", key=f"del-{task_index}"):
                     delete_task(task_index)
                     st.stop()
 
@@ -178,7 +177,7 @@ for category, cat_tasks in tasks_by_category.items():
             if new_desc != task.get("description", ""):
                 update_task(task_index, "description", new_desc)
 
-            st.markdown("\u2705 **Checklist:**")
+            st.markdown("✅ **Checklist:**")
             checklist = task.get("checklist", [])
             sorted_checklist = sorted(checklist, key=lambda x: x.get("order", 0))
             for ci, item in enumerate(sorted_checklist):
@@ -195,15 +194,15 @@ for category, cat_tasks in tasks_by_category.items():
                     update_checklist_item(task_index, ci, "order", order)
                     reorder_checklist(task_index)
 
-                if cl_cols[3].button("\u274c", key=f"delcl-{task_index}-{ci}"):
+                if cl_cols[3].button("❌", key=f"delcl-{task_index}-{ci}"):
                     delete_checklist_item(task_index, ci)
                     st.stop()
 
-            with st.expander("\u2795 Add checklist item", expanded=False):
+            with st.expander("➕ Add checklist item", expanded=False):
                 new_item = st.text_input("New checklist item", key=f"new-{task_index}")
                 if st.button("Add", key=f"add-{task_index}") and new_item.strip():
                     add_checklist_item(task_index, new_item.strip())
-                    st.success("\u2705 Subtask added!")
+                    st.success("✅ Subtask added!")
                     st.stop()
 
             st.markdown("---")
