@@ -10,6 +10,14 @@ CORRECT_PASSWORD = "veda12"  # 👈 Change this
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
+# --- Handle logout ---
+if st.session_state.get("logged_in"):
+    top = st.columns([0.85, 0.15])
+    with top[1]:
+        if st.button("🚪 Logout"):
+            st.session_state.logged_in = False
+            st.experimental_rerun()
+
 if not st.session_state.logged_in:
     st.title("🔒 Login Required")
     password = st.text_input("Enter password", type="password")
@@ -23,7 +31,7 @@ if not st.session_state.logged_in:
 
 # --- App Setup ---
 TASKS_FILE = "tasks.json"
-CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Jagdish Express", "Personal", "Other"]
+CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Personal", "Other"]
 
 def load_tasks():
     if os.path.exists(TASKS_FILE):
@@ -89,7 +97,7 @@ st.title("🗂️ My Task Manager")
 
 with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
-        title = st.text_input("Task Title", placeholder="e.g. Payroll for Tazza, reorder from vendor...")
+        title = st.text_input("Task Title", placeholder="e.g. Payroll, reorder from vendor...")
         category = st.selectbox("Select Category", CATEGORIES)
         col1, col2 = st.columns(2)
         with col1:
@@ -104,14 +112,14 @@ with st.expander("➕ Add a New Task", expanded=True):
                 deadline = datetime.combine(deadline_date, deadline_time).isoformat()
             add_task(title.strip(), deadline, category)
             st.session_state["just_added"] = True
-            st.experimental_rerun()
+            st.stop()
 
-# Success message after rerun
+# Success banner
 if st.session_state.get("just_added"):
     st.success("✅ Task added!")
     del st.session_state["just_added"]
 
-# Group and display tasks
+# Grouped task display
 tasks = sort_tasks(load_tasks())
 tasks_by_category = {}
 for task in tasks:
