@@ -98,6 +98,6 @@ else:
         deadline_display = format_deadline(task.get("deadline"))
         cols[2].markdown(deadline_display)
 
-        if cols[3].button("❌", key=f"del-{i}"):
-            delete_task(i)
-            st.experimental_rerun()
+    if cols[3].button("❌", key=f"del-{i}"):
+        delete_task(i)
+        st.stop()
