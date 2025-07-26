@@ -14,7 +14,6 @@ if "just_logged_in" not in st.session_state:
 if "just_logged_out" not in st.session_state:
     st.session_state.just_logged_out = False
 
-# Handle logout
 if st.session_state.get("logged_in"):
     top = st.columns([0.85, 0.15])
     with top[1]:
@@ -23,7 +22,6 @@ if st.session_state.get("logged_in"):
             st.session_state.just_logged_out = True
             st.stop()
 
-# Handle login
 if not st.session_state.get("logged_in"):
     st.title("🔒 Login Required")
     password = st.text_input("Enter password", type="password")
@@ -71,26 +69,24 @@ def add_task(title, deadline, category, description):
     })
     save_tasks(tasks)
 
-def update_task_status(index, completed):
+def update_task(task_index, key, value):
     tasks = load_tasks()
-    tasks[index]["completed"] = completed
+    tasks[task_index][key] = value
+    save_tasks(tasks)
+
+def update_checklist_item(task_index, item_index, field, value):
+    tasks = load_tasks()
+    tasks[task_index]["checklist"][item_index][field] = value
+    save_tasks(tasks)
+
+def add_checklist_item(task_index, item_text):
+    tasks = load_tasks()
+    tasks[task_index]["checklist"].append({"item": item_text, "done": False})
     save_tasks(tasks)
 
 def delete_task(index):
     tasks = load_tasks()
     tasks.pop(index)
-    save_tasks(tasks)
-
-def add_checklist_item(task_index, item_text):
-    tasks = load_tasks()
-    if "checklist" not in tasks[task_index]:
-        tasks[task_index]["checklist"] = []
-    tasks[task_index]["checklist"].append({"item": item_text, "done": False})
-    save_tasks(tasks)
-
-def update_checklist_status(task_index, item_index, done):
-    tasks = load_tasks()
-    tasks[task_index]["checklist"][item_index]["done"] = done
     save_tasks(tasks)
 
 def sort_tasks(tasks):
@@ -120,10 +116,10 @@ def format_deadline(deadline_str):
         return "📅 Invalid deadline"
 
 # --- UI ---
-st.set_page_config("📝 Tasklist with Categories", layout="centered")
+st.set_page_config("📝 Tasklist with Inline Editing", layout="centered")
 st.title("🗂️ My Task Manager")
 
-# --- Add Task Form ---
+# Add Task Form
 with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
         title = st.text_input("Task Title")
@@ -148,12 +144,12 @@ if st.session_state.get("just_added"):
     st.success("✅ Task added!")
     del st.session_state["just_added"]
 
-# --- Display Tasks ---
+# Display Tasks
 tasks = sort_tasks(load_tasks())
 tasks_by_category = {}
 for i, task in enumerate(tasks):
     cat = task.get("category", "Uncategorized")
-    tasks_by_category.setdefault(cat, []).append((i, task))  # store original index too
+    tasks_by_category.setdefault(cat, []).append((i, task))
 
 st.markdown("---")
 if not tasks:
@@ -163,46 +159,46 @@ else:
         st.subheader(f"📁 {category}")
         for i, (task_index, task) in enumerate(cat_tasks):
             with st.container():
-                row = st.columns([0.07, 0.65, 0.23, 0.05])
-                checked = row[0].checkbox("", value=task["completed"], key=f"check-{category}-{i}")
+                row = st.columns([0.07, 0.6, 0.25, 0.08])
+                checked = row[0].checkbox("", value=task["completed"], key=f"complete-{task_index}")
                 if checked != task["completed"]:
-                    update_task_status(task_index, checked)
+                    update_task(task_index, "completed", checked)
 
-                title_display = f"~~{task['title']}~~" if checked else task['title']
-                row[1].markdown(f"**{title_display}**")
+                # Editable title
+                new_title = row[1].text_input("Task", value=task["title"], key=f"title-{task_index}")
+                if new_title != task["title"]:
+                    update_task(task_index, "title", new_title)
+
                 row[2].markdown(format_deadline(task.get("deadline")))
 
-                if row[3].button("❌", key=f"del-{category}-{i}"):
+                if row[3].button("❌", key=f"del-{task_index}"):
                     delete_task(task_index)
                     st.stop()
 
-            # Description
-            if task.get("description"):
-                st.markdown(f"📝 _{task['description']}_")
+            # Editable Description
+            new_desc = st.text_area("Description", value=task.get("description", ""), key=f"desc-{task_index}")
+            if new_desc != task.get("description", ""):
+                update_task(task_index, "description", new_desc)
 
-            # Checklist Display
+            # Checklist
             st.markdown("✅ **Checklist:**")
             checklist = task.get("checklist", [])
             for ci, item in enumerate(checklist):
-                cl_key = f"cl-{task_index}-{ci}"
-                checked = st.checkbox(item["item"], value=item["done"], key=cl_key)
-                if checked != item["done"]:
-                    update_checklist_status(task_index, ci, checked)
+                cols = st.columns([0.07, 0.93])
+                done = cols[0].checkbox("", value=item["done"], key=f"chk-{task_index}-{ci}")
+                label = cols[1].text_input("", value=item["item"], key=f"item-{task_index}-{ci}")
+
+                if done != item["done"]:
+                    update_checklist_item(task_index, ci, "done", done)
+                if label != item["item"]:
+                    update_checklist_item(task_index, ci, "item", label)
 
             # Add checklist item
             with st.expander("➕ Add checklist item", expanded=False):
-                new_item_key = f"input-{task_index}"
-                add_btn_key = f"add-{task_index}"
-                new_item = st.text_input("New checklist item", key=new_item_key)
-                if st.button("Add", key=add_btn_key):
-                    if new_item.strip():
-                        add_checklist_item(task_index, new_item.strip())
-                        st.session_state["checklist_added"] = task_index
-                        st.stop()
-
-            # Post-checklist message
-            if st.session_state.get("checklist_added") == task_index:
-                st.success("✅ Subtask added!")
-                del st.session_state["checklist_added"]
+                new_item = st.text_input("New checklist item", key=f"new-{task_index}")
+                if st.button("Add", key=f"add-{task_index}") and new_item.strip():
+                    add_checklist_item(task_index, new_item.strip())
+                    st.success("✅ Subtask added!")
+                    st.stop()
 
             st.markdown("---")
