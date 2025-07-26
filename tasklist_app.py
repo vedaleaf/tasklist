@@ -5,7 +5,7 @@ from datetime import datetime, date, time
 from dateutil.parser import parse as parse_datetime
 
 # --- Login Setup ---
-CORRECT_PASSWORD = "veda12"  # 👈 Change this to your real password
+CORRECT_PASSWORD = "veda12"  # 👈 Change this
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -21,8 +21,9 @@ if not st.session_state.logged_in:
             st.error("Incorrect password")
     st.stop()
 
+# --- App Setup ---
 TASKS_FILE = "tasks.json"
-CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Personal", "Other"]
+CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Jagdish Express", "Personal", "Other"]
 
 def load_tasks():
     if os.path.exists(TASKS_FILE):
@@ -82,6 +83,7 @@ def format_deadline(deadline_str):
     except Exception:
         return "📅 Invalid deadline"
 
+# --- UI ---
 st.set_page_config("📝 Tasklist with Categories", layout="centered")
 st.title("🗂️ My Task Manager")
 
@@ -89,10 +91,10 @@ with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
         title = st.text_input("Task Title", placeholder="e.g. Payroll for Tazza, reorder from vendor...")
         category = st.selectbox("Select Category", CATEGORIES)
-        deadline_col1, deadline_col2 = st.columns(2)
-        with deadline_col1:
+        col1, col2 = st.columns(2)
+        with col1:
             deadline_date = st.date_input("Deadline Date", value=None)
-        with deadline_col2:
+        with col2:
             deadline_time = st.time_input("Deadline Time (optional)", value=time(12, 0))
 
         submitted = st.form_submit_button("Add Task")
@@ -101,9 +103,15 @@ with st.expander("➕ Add a New Task", expanded=True):
             if deadline_date:
                 deadline = datetime.combine(deadline_date, deadline_time).isoformat()
             add_task(title.strip(), deadline, category)
-            st.success("✅ Task added!")
+            st.session_state["just_added"] = True
             st.experimental_rerun()
 
+# Success message after rerun
+if st.session_state.get("just_added"):
+    st.success("✅ Task added!")
+    del st.session_state["just_added"]
+
+# Group and display tasks
 tasks = sort_tasks(load_tasks())
 tasks_by_category = {}
 for task in tasks:
@@ -118,19 +126,19 @@ else:
         st.subheader(f"📁 {category}")
         for i, task in enumerate(cat_tasks):
             with st.container():
-                row1 = st.columns([0.07, 0.65, 0.23, 0.05])
-                checked = row1[0].checkbox("", value=task["completed"], key=f"check-{category}-{i}")
+                row = st.columns([0.07, 0.65, 0.23, 0.05])
+                checked = row[0].checkbox("", value=task["completed"], key=f"check-{category}-{i}")
                 if checked != task["completed"]:
                     task_index = tasks.index(task)
                     update_task_status(task_index, checked)
 
                 title_display = f"~~{task['title']}~~" if checked else task['title']
-                row1[1].markdown(f"**{title_display}**")
+                row[1].markdown(f"**{title_display}**")
 
                 deadline_display = format_deadline(task.get("deadline"))
-                row1[2].markdown(deadline_display)
+                row[2].markdown(deadline_display)
 
-                if row1[3].button("❌", key=f"del-{category}-{i}"):
+                if row[3].button("❌", key=f"del-{category}-{i}"):
                     task_index = tasks.index(task)
                     delete_task(task_index)
                     st.stop()
