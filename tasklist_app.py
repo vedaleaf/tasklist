@@ -9,25 +9,41 @@ CORRECT_PASSWORD = "veda12"  # 👈 Change this
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "just_logged_in" not in st.session_state:
+    st.session_state.just_logged_in = False
+if "just_logged_out" not in st.session_state:
+    st.session_state.just_logged_out = False
 
-# --- Handle logout ---
+# --- Logout button ---
 if st.session_state.get("logged_in"):
     top = st.columns([0.85, 0.15])
     with top[1]:
         if st.button("🚪 Logout"):
             st.session_state.logged_in = False
-            st.experimental_rerun()
+            st.session_state.just_logged_out = True
+            st.stop()  # Stop early to prevent errors
 
-if not st.session_state.logged_in:
+# --- Login screen ---
+if not st.session_state.get("logged_in"):
     st.title("🔒 Login Required")
     password = st.text_input("Enter password", type="password")
     if st.button("Login"):
         if password == CORRECT_PASSWORD:
             st.session_state.logged_in = True
-            st.experimental_rerun()
+            st.session_state.just_logged_in = True
+            st.stop()  # Stop so next run is clean
         else:
             st.error("Incorrect password")
     st.stop()
+
+# --- Post-login or logout messages ---
+if st.session_state.just_logged_in:
+    st.session_state.just_logged_in = False
+    st.success("✅ Logged in!")
+
+if st.session_state.just_logged_out:
+    st.session_state.just_logged_out = False
+    st.info("🚪 Logged out successfully.")
 
 # --- App Setup ---
 TASKS_FILE = "tasks.json"
