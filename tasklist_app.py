@@ -187,11 +187,20 @@ else:
                 if checked != item["done"]:
                     update_checklist_status(task_index, ci, checked)
 
-            # Add checklist item input
-            with st.expander("➕ Add checklist item", expanded=False):
-                new_item = st.text_input(f"New item for task {task_index}", key=f"input-{task_index}")
-                if st.button("Add", key=f"add-{task_index}") and new_item.strip():
-                    add_checklist_item(task_index, new_item.strip())
-                    st.experimental_rerun()
+           with st.expander("➕ Add checklist item", expanded=False):
+    new_item_key = f"input-{task_index}"
+    add_btn_key = f"add-{task_index}"
+    new_item = st.text_input("New checklist item", key=new_item_key)
+    if st.button("Add", key=add_btn_key):
+        if new_item.strip():
+            add_checklist_item(task_index, new_item.strip())
+            st.session_state["checklist_added"] = task_index
+            st.stop()
+
+            # After rerun, show success message
+            if st.session_state.get("checklist_added") == task_index:
+                st.success("✅ Subtask added!")
+                del st.session_state["checklist_added"]
+
 
             st.markdown("---")
