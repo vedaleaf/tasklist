@@ -1,4 +1,4 @@
-# Vedaleaf Tasklist App
+# Simple Tasklist App
 
 This is a simple Streamlit-based tasklist app that helps you stay on top of daily goals. You can add tasks, set deadlines, mark them complete, and view time-sensitive alerts like "Due Soon" or "Overdue".
 
