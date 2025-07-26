@@ -1,26 +1,30 @@
-# Simple Tasklist App
+# Secure Tasklist App
 
-This is a simple Streamlit-based tasklist app that helps you stay on top of daily goals. You can add tasks, set deadlines, mark them complete, and view time-sensitive alerts like "Due Soon" or "Overdue".
+A secure tasklist app for managing multiple businesses using Streamlit.
 
 ## Features
-- ✅ Add tasks with deadlines (date + time)
-- 📅 See deadline labels: Overdue, Due Soon, Due Today
-- 🧹 Mark complete / delete tasks
-- 💾 Tasks saved locally in `tasks.json`
-- 📊 Automatically sorted by deadline
+- 🔐 Login-protected with a master password
+- 🗂️ Categorized tasks (VedaLeaf, Tazza, etc.)
+- 📅 Deadlines with color-coded labels
+- ✅ Completion tracking
+- 💾 Local file-based storage
 
-## Setup Instructions
-1. Clone this repo or download and unzip.
-2. Install dependencies:
+## How to Use
 
+1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the app:
-
+2. Run the app:
 ```bash
 streamlit run tasklist_app.py
 ```
 
----
+3. Use the login password to access your tasks.
+
+## Customize Password
+Edit the top of `tasklist_app.py` and replace:
+```python
+CORRECT_PASSWORD = "YourStrongPassword123"
+```

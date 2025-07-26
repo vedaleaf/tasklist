@@ -4,11 +4,26 @@ import os
 from datetime import datetime, date, time
 from dateutil.parser import parse as parse_datetime
 
+# --- Login Setup ---
+CORRECT_PASSWORD = "YourStrongPassword123"  # 👈 Change this to your real password
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
+    st.title("🔒 Login Required")
+    password = st.text_input("Enter password", type="password")
+    if st.button("Login"):
+        if password == CORRECT_PASSWORD:
+            st.session_state.logged_in = True
+            st.experimental_rerun()
+        else:
+            st.error("Incorrect password")
+    st.stop()
+
 TASKS_FILE = "tasks.json"
+CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Jagdish Express", "Personal", "Other"]
 
-CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Personal", "Other"]
-
-# ---------- Utilities ----------
 def load_tasks():
     if os.path.exists(TASKS_FILE):
         with open(TASKS_FILE, "r") as f:
@@ -67,9 +82,8 @@ def format_deadline(deadline_str):
     except Exception:
         return "📅 Invalid deadline"
 
-# ---------- Streamlit UI ----------
 st.set_page_config("📝 Tasklist with Categories", layout="centered")
-st.title("🗂️ My Task Manager")
+st.title("🗂️ Multi-Business Task Manager")
 
 with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
@@ -90,7 +104,6 @@ with st.expander("➕ Add a New Task", expanded=True):
             st.success("✅ Task added!")
             st.experimental_rerun()
 
-# Group tasks by category
 tasks = sort_tasks(load_tasks())
 tasks_by_category = {}
 for task in tasks:
