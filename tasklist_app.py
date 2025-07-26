@@ -69,7 +69,7 @@ def format_deadline(deadline_str):
 
 # ---------- Streamlit UI ----------
 st.set_page_config("📝 Tasklist with Categories", layout="centered")
-st.title("🗂️ Multi-Business Task Manager")
+st.title("🗂️ My Task Manager")
 
 with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
