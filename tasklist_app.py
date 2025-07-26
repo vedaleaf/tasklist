@@ -5,7 +5,7 @@ from datetime import datetime, date, time
 from dateutil.parser import parse as parse_datetime
 
 # --- Login Setup ---
-CORRECT_PASSWORD = "YourStrongPassword123"  # 👈 Change this to your real password
+CORRECT_PASSWORD = "Veda12"  # 👈 Change this to your real password
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
