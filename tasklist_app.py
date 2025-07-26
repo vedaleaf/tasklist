@@ -22,7 +22,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 TASKS_FILE = "tasks.json"
-CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Jagdish Express", "Personal", "Other"]
+CATEGORIES = ["VedaLeaf", "Tazza", "Syracuse Halal Gyro", "Personal", "Other"]
 
 def load_tasks():
     if os.path.exists(TASKS_FILE):
@@ -83,7 +83,7 @@ def format_deadline(deadline_str):
         return "📅 Invalid deadline"
 
 st.set_page_config("📝 Tasklist with Categories", layout="centered")
-st.title("🗂️ Multi-Business Task Manager")
+st.title("🗂️ My Task Manager")
 
 with st.expander("➕ Add a New Task", expanded=True):
     with st.form("add_task_form", clear_on_submit=True):
