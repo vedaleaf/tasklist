@@ -14,6 +14,7 @@ if "just_logged_in" not in st.session_state:
 if "just_logged_out" not in st.session_state:
     st.session_state.just_logged_out = False
 
+# Handle logout
 if st.session_state.get("logged_in"):
     top = st.columns([0.85, 0.15])
     with top[1]:
@@ -22,6 +23,7 @@ if st.session_state.get("logged_in"):
             st.session_state.just_logged_out = True
             st.stop()
 
+# Handle login
 if not st.session_state.get("logged_in"):
     st.title("🔒 Login Required")
     password = st.text_input("Enter password", type="password")
@@ -168,7 +170,6 @@ else:
 
                 title_display = f"~~{task['title']}~~" if checked else task['title']
                 row[1].markdown(f"**{title_display}**")
-
                 row[2].markdown(format_deadline(task.get("deadline")))
 
                 if row[3].button("❌", key=f"del-{category}-{i}"):
@@ -179,28 +180,29 @@ else:
             if task.get("description"):
                 st.markdown(f"📝 _{task['description']}_")
 
-            # Checklist Items
+            # Checklist Display
             st.markdown("✅ **Checklist:**")
             checklist = task.get("checklist", [])
             for ci, item in enumerate(checklist):
-                checked = st.checkbox(item["item"], value=item["done"], key=f"cl-{task_index}-{ci}")
+                cl_key = f"cl-{task_index}-{ci}"
+                checked = st.checkbox(item["item"], value=item["done"], key=cl_key)
                 if checked != item["done"]:
                     update_checklist_status(task_index, ci, checked)
 
-           with st.expander("➕ Add checklist item", expanded=False):
-    new_item_key = f"input-{task_index}"
-    add_btn_key = f"add-{task_index}"
-    new_item = st.text_input("New checklist item", key=new_item_key)
-    if st.button("Add", key=add_btn_key):
-        if new_item.strip():
-            add_checklist_item(task_index, new_item.strip())
-            st.session_state["checklist_added"] = task_index
-            st.stop()
+            # Add checklist item
+            with st.expander("➕ Add checklist item", expanded=False):
+                new_item_key = f"input-{task_index}"
+                add_btn_key = f"add-{task_index}"
+                new_item = st.text_input("New checklist item", key=new_item_key)
+                if st.button("Add", key=add_btn_key):
+                    if new_item.strip():
+                        add_checklist_item(task_index, new_item.strip())
+                        st.session_state["checklist_added"] = task_index
+                        st.stop()
 
-            # After rerun, show success message
+            # Post-checklist message
             if st.session_state.get("checklist_added") == task_index:
                 st.success("✅ Subtask added!")
                 del st.session_state["checklist_added"]
-
 
             st.markdown("---")
